@@ -28,8 +28,7 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
      * @return void
      * @throws Typecho_Plugin_Exception
      */
-    public static function deactivate() {
-    }
+    public static function deactivate() {}
     
     /**
      * 插件配置方法
@@ -42,7 +41,7 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
         $mode = new Typecho_Widget_Helper_Form_Element_Checkbox(
             'mode',
             [
-                'hook' => '以hook模式显示ip  (不推荐使用)',
+                'hook' => '以hook模式显示ip (不推荐使用)',
             ],
             NULL,
             _t('插件模式设置'),
@@ -77,7 +76,7 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
      * @param string $ip
      * @return string
      */
-    private static function getIpLoc($ip) {
+    private static function getIpLoc(string $ip): string {
         require_once('ipip/db/City.php');
         require_once('ipip/db/CityInfo.php');
         require_once('ipip/db/Reader.php');
@@ -93,7 +92,7 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
                 $loc = $city->country_name;
             else {
                 $loc = $city->region_name;
-                if(in_array('city', ($config->ip_show) ? $config->ip_show : []))
+                if(in_array('city', ($config->ip_show) ?: []))
                     $loc .= $city->city_name;
             }
         } catch(Exception $e) {
@@ -109,9 +108,9 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
      * @param string $ip
      * @return string
      */
-    private static function maskIp($ip) {
+    private static function maskIp(string $ip): string {
         $config = Typecho_Widget::widget('Widget_Options')->Plugin('CommentShowIp');
-        if(in_array('mask', ($config->ip_show) ? $config->ip_show : []))
+        if(in_array('mask', ($config->ip_show) ?: []))
             $ip = join('.', array_slice(explode('.', $ip), 0, 2)).'.*.*';
         return $ip;
     }
@@ -125,17 +124,16 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
      * @param int $type
      * @return string
      */
-    public static function output($reply, $template = NULL, $type = 0) {
+    public static function output(Widget_Abstract_Comments $reply, ?string $template = NULL, int $type = 0): ?string {
         $loc = self::getIpLoc($reply->ip);
         $ip = self::maskIp($reply->ip);
         if($template == NULL) {
             $template = "ip属地: {loc} ({ip})<br>";
         }
         $content = str_replace(['{ip}', '{loc}'], [$ip, $loc], $template);
-        if($type == 1)
-            return $content;
-        else
-            echo $content;
+        if($type == 1) return $content;
+        else echo $content;
+        return NULL;
     }
 
     /**
@@ -146,10 +144,10 @@ class CommentShowIp_Plugin implements Typecho_Plugin_Interface {
      * @param Widget_Abstract_Comments $reply
      * @return string
      */
-    public static function replyHook($text, $reply) {
+    public static function replyHook(string $text, Widget_Abstract_Comments $reply): string {
         $config = Typecho_Widget::widget('Widget_Options')->Plugin('CommentShowIp');
         if(
-            in_array('hook', ($config->mode) ? $config->mode : []) &&
+            in_array('hook', ($config->mode) ?: []) &&
             !(
                 $reply instanceof Widget\Comments\Admin || 
                 $reply instanceof Widget\Comments\Edit || 
